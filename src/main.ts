@@ -33,20 +33,24 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </div>
 `
 
-const salt = new Uint8Array([9, 0, 1, 2]);
+const salt = new Uint8Array([9, 0, 1, 2]).buffer;
 const nonce = crypto.getRandomValues(new Uint8Array(12));
 
-const {rawId, transports} = {...(await register(salt))};
+let registerData: {rawId: BufferSource, transports: string[]};
+
+document.getElementById('register-button')!.addEventListener('click', async () => {
+  registerData = await register(salt);
+});
 
 document.getElementById('encrypt-button')!.addEventListener('click', async () => {
   const toEncrypt = (document.getElementById('encrypt-input') as HTMLTextAreaElement)!.value;
-  const encrypted = await encrypt(salt, toEncrypt, nonce, rawId, transports);
+  const encrypted = await encrypt(salt, toEncrypt, nonce, registerData.rawId, registerData.transports);
   (document.getElementById('encrypt-output') as HTMLTextAreaElement)!.value = encrypted;
 });
 
 document.getElementById('decrypt-button')!.addEventListener('click', async () => {
   const toDecrypt = (document.getElementById('decrypt-input') as HTMLTextAreaElement)!.value;
-  const decrypted = await decrypt(salt, toDecrypt, nonce, rawId, transports);
+  const decrypted = await decrypt(salt, toDecrypt, nonce, registerData.rawId, registerData.transports);
   console.log(decrypted);
   (document.getElementById('decrypt-output') as HTMLTextAreaElement)!.value = decrypted;
 });
